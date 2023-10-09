@@ -1,0 +1,72 @@
+jueguito tcg(traiding card games)
+// esto es el servidor
+Socket socketServidor = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+IPEndPoint direccionServidor = new IPEndPoint(IPAddress.Any, 1234);
+
+try
+{
+    socketServidor.Bind(direccionServidor);
+    socketServidor.Listen(10);
+    Socket cliente = default(Socket);
+    int cantidadDeClientes = 0;
+    while (true)//es para q este en espera d un cliente siempre
+    {
+        cantidadDeClientes++;
+        cliente = socketServidor.Accept();
+        Thread clienteThread = new Thread(new ThreadStart(() => accionCliente(cliente)));
+        clienteThread.Start();
+
+    }
+
+}
+catch (Exception ex) { }
+socketServidor.Close();
+        
+         void accionCliente(Socket cliente) // es lo que recibe el mjs del cliente y se lo manda de vuelta
+         {
+            while (true)
+            {
+                String texto = null;
+                byte[] textoBytes = new byte[255];
+                 int enteroTexto = cliente.Receive(textoBytes, 0, textoBytes.Count(), 0);
+                 Array.Resize(ref textoBytes, enteroTexto);
+                 texto = Encoding.Default.GetString(textoBytes);
+                 Console.WriteLine(texto);
+                 texto = "incerte";
+                 textoBytes = Encoding.Default.GetBytes(texto);
+                 cliente.Send(textoBytes, 0, textoBytes.Count(), 0);
+
+
+
+                }
+
+            }
+
+
+
+
+
+// cliente 
+Socket socketClienta = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+IPEndPoint direccionClienta = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 1234);
+
+try
+{
+    socketClienta.Connect(direccionClienta);
+    String texto = null;
+    while (true)
+    {
+        byte[] textoBytes = new byte[255];
+        texto = Console.ReadLine();
+        textoBytes = Encoding.Default.GetBytes(texto);
+        socketClienta.Send(textoBytes, 0, textoBytes.Count(), 0);
+        int enteroTexto = socketClienta.Receive(textoBytes, 0, textoBytes.Length, 0);
+        Array.Resize(ref textoBytes, enteroTexto);
+        texto = Encoding.Default.GetString(textoBytes);
+        Console.WriteLine(texto);
+    }
+
+}
+catch (Exception ex) { }
+socketClienta.Close();
+
